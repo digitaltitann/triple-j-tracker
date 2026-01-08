@@ -59,9 +59,6 @@ function handleTrack() {
     save();
     statsInput.value = '';
     renderCards();
-
-    // Fetch stats for newly added players
-    fetchStatsForNew(parsed.length);
 }
 
 // Fetch stats for recently added players
@@ -155,13 +152,10 @@ function renderCard(player) {
         }
     }
 
-    // For players not found or no game
-    if (player.found === false) {
+    // If no stats entered yet, show tracking
+    if (current === 0 && !player.lastUpdated) {
         status = 'pending';
-        statusText = 'NOT FOUND';
-    } else if (player.noGame) {
-        status = 'pending';
-        statusText = 'NO GAME';
+        statusText = 'TRACKING';
     }
 
     const directionSymbol = isOver ? '+' : '-';
