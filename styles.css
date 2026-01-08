@@ -35,23 +35,26 @@ header h1 {
     font-size: 0.6em;
 }
 
-.crew-photo {
-    margin-bottom: 20px;
-}
-
 .crew-photo img {
-    width: 150px;
-    height: 150px;
+    width: 60px;
+    height: 60px;
     border-radius: 50%;
     object-fit: cover;
-    border: 3px solid rgba(0, 212, 255, 0.5);
-    box-shadow: 0 0 30px rgba(0, 212, 255, 0.3);
+    border: 2px solid rgba(0, 212, 255, 0.5);
+    box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
 }
 
 /* Input Section */
 .input-section {
-    max-width: 800px;
+    max-width: 1000px;
     margin: 0 auto 40px;
+}
+
+.input-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
 }
 
 .input-container {
