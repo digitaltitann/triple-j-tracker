@@ -2,6 +2,8 @@
 // Using NBA's official free CDN endpoints
 
 const SportsAPI = {
+    // Using CORS proxy for browser access
+    PROXY: 'https://api.codetabs.com/v1/proxy/?quest=',
     NBA_SCOREBOARD: 'https://cdn.nba.com/static/json/liveData/scoreboard/todaysScoreboard_00.json',
     NBA_BOXSCORE: 'https://cdn.nba.com/static/json/liveData/boxscore/boxscore_',
 
@@ -35,7 +37,7 @@ const SportsAPI = {
         }
 
         try {
-            const response = await fetch(this.NBA_SCOREBOARD);
+            const response = await fetch(this.PROXY + this.NBA_SCOREBOARD);
             if (!response.ok) return [];
 
             const data = await response.json();
@@ -51,7 +53,7 @@ const SportsAPI = {
     // Get boxscore for a specific game
     async getBoxscore(gameId) {
         try {
-            const response = await fetch(`${this.NBA_BOXSCORE}${gameId}.json`);
+            const response = await fetch(this.PROXY + `${this.NBA_BOXSCORE}${gameId}.json`);
             if (!response.ok) return null;
 
             const data = await response.json();
