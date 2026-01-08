@@ -84,6 +84,7 @@ async function fetchStatsForPlayer(player) {
     player.noGame = result.noGame;
     player.minutes = result.minutes;
     player.gameStatus = result.gameStatus;
+    player.gameInfo = result.gameInfo;
     player.isLive = result.isLive;
 
     save();
@@ -191,7 +192,11 @@ function renderCard(player) {
             </div>
 
             <div class="card-footer">
-                <span class="status-badge ${status}">${statusText}</span>
+                <div class="footer-left">
+                    <span class="status-badge ${status}">${statusText}</span>
+                    ${player.gameInfo ? `<span class="game-info">${player.gameInfo}</span>` : ''}
+                    ${player.gameStatus ? `<span class="game-time">${player.gameStatus}</span>` : ''}
+                </div>
                 <button class="btn-update" onclick="updateManually('${player.id}')">Update</button>
             </div>
         </div>

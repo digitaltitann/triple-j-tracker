@@ -136,11 +136,19 @@ const SportsAPI = {
                 const player = this.findPlayerInBoxscore(boxscore, playerName);
                 if (player && player.statistics) {
                     const current = this.calculateStat(player.statistics, statType);
+
+                    // Get game info
+                    const homeTeam = game.homeTeam?.teamTricode || '';
+                    const awayTeam = game.awayTeam?.teamTricode || '';
+                    const homeScore = game.homeTeam?.score || 0;
+                    const awayScore = game.awayTeam?.score || 0;
+
                     return {
                         current,
                         found: true,
                         noGame: false,
                         gameStatus: game.gameStatusText,
+                        gameInfo: `${awayTeam} ${awayScore} - ${homeScore} ${homeTeam}`,
                         minutes: player.statistics.minutes || '0:00',
                         isLive: game.gameStatus === 2
                     };
