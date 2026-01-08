@@ -31,9 +31,8 @@ header h1 {
     margin-bottom: 8px;
 }
 
-.subtitle {
-    color: #666;
-    font-size: 1.1rem;
+.aka {
+    font-size: 0.6em;
 }
 
 .crew-photo {
