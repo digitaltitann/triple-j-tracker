@@ -40,7 +40,7 @@ header h1 {
     height: 360px;
     border-radius: 50%;
     object-fit: cover;
-    object-position: top;
+    object-position: center 20%;
 }
 
 /* Input Section */
