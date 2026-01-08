@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triple J Bet Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Triple J Bet Tracker</h1>
+            <p class="subtitle">AKA Jun</p>
+        </header>
+
+        <!-- Simple Input -->
+        <section class="input-section">
+            <div class="input-container">
+                <textarea
+                    id="stats-input"
+                    placeholder="Type what you want to track, e.g.:&#10;immanuel quickley 4+ assists, karl-anthony towns 15+ points, jalen johnson 18+ points"
+                    rows="3"
+                ></textarea>
+                <button id="track-btn" class="btn-track">Track Stats</button>
+            </div>
+            <p class="input-hint">Just type player names with their stat targets. Use "+" for over (e.g., "15+ points") or "under" for under.</p>
+        </section>
+
+        <!-- Live Stats Cards -->
+        <section class="stats-section">
+            <div class="section-header">
+                <h2>Live Tracking</h2>
+                <div class="header-actions">
+                    <button class="btn-refresh" onclick="refreshAllStats()">
+                        <span class="refresh-icon">↻</span> Refresh
+                    </button>
+                    <button class="btn-clear" onclick="clearAll()">Clear All</button>
+                </div>
+            </div>
+            <div id="stats-container" class="stats-grid">
+                <div class="empty-state">
+                    <p>No stats being tracked yet.</p>
+                    <p class="hint">Type some player props above to get started!</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="parser.js"></script>
+    <script src="api.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
