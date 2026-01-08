@@ -197,8 +197,62 @@ header h1 {
 }
 
 .stat-card.hitting {
-    border-color: rgba(0, 255, 136, 0.4);
-    box-shadow: 0 0 30px rgba(0, 255, 136, 0.15);
+    border-color: rgba(255, 100, 0, 0.6);
+    box-shadow: 0 0 40px rgba(255, 100, 0, 0.4), 0 0 80px rgba(255, 50, 0, 0.2);
+    animation: fireGlow 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes fireGlow {
+    0% { box-shadow: 0 0 40px rgba(255, 100, 0, 0.4), 0 0 80px rgba(255, 50, 0, 0.2); }
+    100% { box-shadow: 0 0 60px rgba(255, 150, 0, 0.6), 0 0 100px rgba(255, 80, 0, 0.3); }
+}
+
+/* Fire effect container */
+.fire-container {
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 2rem;
+    animation: fireFloat 0.5s ease-in-out infinite alternate;
+    z-index: 10;
+}
+
+@keyframes fireFloat {
+    0% { transform: translateX(-50%) translateY(0); }
+    100% { transform: translateX(-50%) translateY(-5px); }
+}
+
+/* Fire particles around the number */
+.stat-card.hitting .current-value {
+    position: relative;
+    color: #ff6600;
+    text-shadow: 0 0 20px rgba(255, 100, 0, 0.8), 0 0 40px rgba(255, 50, 0, 0.6), 0 0 60px rgba(255, 0, 0, 0.4);
+    animation: firePulse 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes firePulse {
+    0% {
+        text-shadow: 0 0 20px rgba(255, 100, 0, 0.8), 0 0 40px rgba(255, 50, 0, 0.6), 0 0 60px rgba(255, 0, 0, 0.4);
+        transform: scale(1);
+    }
+    100% {
+        text-shadow: 0 0 30px rgba(255, 150, 0, 1), 0 0 60px rgba(255, 80, 0, 0.8), 0 0 90px rgba(255, 30, 0, 0.5);
+        transform: scale(1.05);
+    }
+}
+
+/* Fire background effect */
+.stat-card.hitting::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(180deg, rgba(255, 100, 0, 0.1) 0%, transparent 50%);
+    border-radius: 20px;
+    pointer-events: none;
 }
 
 .stat-card.close {

@@ -168,8 +168,11 @@ function renderCard(player) {
     const directionSymbol = isOver ? '+' : '-';
     const targetDisplay = `${player.target}${directionSymbol} ${player.displayStat}`;
 
+    const fireEmojis = status === 'hitting' ? '<div class="fire-container">🔥🔥🔥</div>' : '';
+
     return `
         <div class="stat-card ${status}">
+            ${fireEmojis}
             <button class="card-remove" onclick="removePlayer('${player.id}')">&times;</button>
 
             <div class="player-name">${player.playerName}</div>
