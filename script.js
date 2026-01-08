@@ -86,6 +86,7 @@ async function fetchStatsForPlayer(player) {
     player.gameStatus = result.gameStatus;
     player.gameInfo = result.gameInfo;
     player.isLive = result.isLive;
+    player.onCourt = result.onCourt;
 
     save();
     renderCards();
@@ -176,7 +177,7 @@ function renderCard(player) {
             ${fireEmojis}
             <button class="card-remove" onclick="removePlayer('${player.id}')">&times;</button>
 
-            <div class="player-name">${player.playerName}</div>
+            <div class="player-name">${player.playerName} ${player.isLive ? (player.onCourt ? '<span class="court-status on-court">ON COURT</span>' : '<span class="court-status on-bench">BENCH</span>') : ''}</div>
             <div class="target-line">${targetDisplay}</div>
 
             <div class="stat-display">

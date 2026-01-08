@@ -150,7 +150,8 @@ const SportsAPI = {
                         gameStatus: game.gameStatusText,
                         gameInfo: `${awayTeam} ${awayScore} - ${homeScore} ${homeTeam}`,
                         minutes: player.statistics.minutes || '0:00',
-                        isLive: game.gameStatus === 2
+                        isLive: game.gameStatus === 2,
+                        onCourt: player.oncourt === "1"
                     };
                 }
             }

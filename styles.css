@@ -292,6 +292,26 @@ header h1 {
     padding-right: 30px;
 }
 
+.court-status {
+    font-size: 0.6rem;
+    padding: 3px 8px;
+    border-radius: 10px;
+    margin-left: 8px;
+    vertical-align: middle;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.court-status.on-court {
+    background: rgba(0, 255, 136, 0.2);
+    color: #00ff88;
+}
+
+.court-status.on-bench {
+    background: rgba(255, 193, 7, 0.2);
+    color: #ffc107;
+}
+
 .target-line {
     color: #888;
     font-size: 1rem;
