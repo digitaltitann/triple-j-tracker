@@ -36,6 +36,19 @@ header h1 {
     font-size: 1.1rem;
 }
 
+.crew-photo {
+    margin-bottom: 20px;
+}
+
+.crew-photo img {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid rgba(0, 212, 255, 0.5);
+    box-shadow: 0 0 30px rgba(0, 212, 255, 0.3);
+}
+
 /* Input Section */
 .input-section {
     max-width: 800px;
