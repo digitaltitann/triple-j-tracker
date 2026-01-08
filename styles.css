@@ -469,27 +469,160 @@ header h1 {
 
 /* Responsive */
 @media (max-width: 768px) {
-    header h1 { font-size: 2rem; }
+    .container {
+        padding: 15px;
+    }
+
+    header {
+        padding: 20px 0 15px;
+    }
+
+    header h1 {
+        font-size: 1.8rem;
+    }
+
+    .aka {
+        display: block;
+        margin-top: 5px;
+    }
+
+    /* Hide crew photos on mobile */
+    .crew-photo {
+        display: none;
+    }
+
+    .input-wrapper {
+        flex-direction: column;
+        gap: 15px;
+    }
 
     .input-container {
-        flex-direction: column;
+        min-width: unset;
+        width: 100%;
+    }
+
+    #stats-input {
+        font-size: 1rem;
+        padding: 15px;
     }
 
     .btn-track {
         width: 100%;
+        padding: 15px 25px;
+    }
+
+    .input-hint {
+        font-size: 0.8rem;
+    }
+
+    .input-section {
+        margin-bottom: 25px;
     }
 
     .stats-grid {
         grid-template-columns: 1fr;
+        gap: 15px;
     }
 
     .section-header {
         flex-direction: column;
-        gap: 15px;
+        gap: 12px;
         align-items: flex-start;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+    }
+
+    .section-header h2 {
+        font-size: 1.2rem;
+    }
+
+    .header-actions {
+        width: 100%;
+    }
+
+    .btn-refresh, .btn-clear {
+        flex: 1;
+        justify-content: center;
+        padding: 12px 15px;
+    }
+
+    /* Stat cards mobile */
+    .stat-card {
+        padding: 20px;
+        border-radius: 15px;
+    }
+
+    .player-name {
+        font-size: 1.2rem;
+        padding-right: 35px;
+    }
+
+    .court-status {
+        display: block;
+        margin-left: 0;
+        margin-top: 5px;
+        width: fit-content;
+    }
+
+    .target-line {
+        font-size: 0.9rem;
+        margin-bottom: 15px;
     }
 
     .current-value {
         font-size: 3rem;
+    }
+
+    .target-number {
+        font-size: 1.5rem;
+    }
+
+    .card-footer {
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start;
+    }
+
+    .footer-left {
+        width: 100%;
+    }
+
+    .btn-update {
+        width: 100%;
+        padding: 10px;
+        text-align: center;
+    }
+
+    .fire-container {
+        font-size: 1.5rem;
+        top: -15px;
+    }
+}
+
+/* Extra small screens */
+@media (max-width: 400px) {
+    header h1 {
+        font-size: 1.5rem;
+    }
+
+    .current-value {
+        font-size: 2.5rem;
+    }
+
+    .target-number {
+        font-size: 1.3rem;
+    }
+
+    .status-badge {
+        font-size: 0.65rem;
+        padding: 4px 8px;
+    }
+
+    .game-info {
+        font-size: 0.65rem;
+    }
+
+    .game-time {
+        font-size: 0.6rem;
     }
 }
