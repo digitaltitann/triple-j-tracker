@@ -59,6 +59,9 @@ function handleTrack() {
     save();
     statsInput.value = '';
     renderCards();
+
+    // Fetch live stats for newly added players
+    fetchStatsForNew(parsed.length);
 }
 
 // Fetch stats for recently added players
@@ -81,6 +84,7 @@ async function fetchStatsForPlayer(player) {
     player.noGame = result.noGame;
     player.minutes = result.minutes;
     player.gameStatus = result.gameStatus;
+    player.isLive = result.isLive;
 
     save();
     renderCards();
@@ -152,10 +156,13 @@ function renderCard(player) {
         }
     }
 
-    // If no stats entered yet, show tracking
-    if (current === 0 && !player.lastUpdated) {
+    // Handle different states
+    if (player.found === false) {
         status = 'pending';
-        statusText = 'TRACKING';
+        statusText = 'NO GAME TODAY';
+    } else if (player.isLive) {
+        // Keep the calculated status but add LIVE indicator
+        statusText = `LIVE - ${statusText}`;
     }
 
     const directionSymbol = isOver ? '+' : '-';
