@@ -1,0 +1,17 @@
+{
+  "name": "Triple J Bet Tracker",
+  "short_name": "Triple J",
+  "description": "Track NBA player prop bets in real-time",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#1a1a2e",
+  "theme_color": "#1a1a2e",
+  "icons": [
+    {
+      "src": "triple j.jpg",
+      "sizes": "any",
+      "type": "image/jpeg",
+      "purpose": "any"
+    }
+  ]
+}
