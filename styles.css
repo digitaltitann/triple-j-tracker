@@ -626,3 +626,96 @@ header h1 {
         font-size: 0.6rem;
     }
 }
+
+/* Sport Badges */
+.sport-badge {
+    font-size: 0.55rem;
+    padding: 3px 8px;
+    border-radius: 10px;
+    margin-left: 8px;
+    vertical-align: middle;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.sport-badge.nba {
+    background: rgba(200, 50, 50, 0.25);
+    color: #ff6b6b;
+}
+
+.sport-badge.nfl {
+    background: rgba(0, 100, 200, 0.25);
+    color: #4dabf7;
+}
+
+/* Team Bet Styles */
+.stat-display.team-scores {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    gap: 15px;
+}
+
+.score-block {
+    text-align: center;
+    flex: 1;
+}
+
+.team-abbrev {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #888;
+    margin-bottom: 5px;
+}
+
+.team-abbrev.winning {
+    color: #00ff88;
+}
+
+.team-abbrev.losing {
+    color: #ff4757;
+}
+
+.score-separator {
+    font-size: 1.2rem;
+    color: #555;
+    padding: 0 10px;
+}
+
+.spread-indicator {
+    font-size: 0.85rem;
+    color: #ffc107;
+    margin-top: 5px;
+    font-weight: 600;
+}
+
+/* Team score current value sizing */
+.team-scores .current-value {
+    font-size: 3rem;
+}
+
+@media (max-width: 768px) {
+    .sport-badge {
+        display: inline-block;
+        margin-left: 5px;
+    }
+
+    .team-scores .current-value {
+        font-size: 2.5rem;
+    }
+
+    .team-abbrev {
+        font-size: 0.9rem;
+    }
+
+    .score-separator {
+        font-size: 1rem;
+        padding: 0 5px;
+    }
+}
+
+@media (max-width: 400px) {
+    .team-scores .current-value {
+        font-size: 2rem;
+    }
+}
