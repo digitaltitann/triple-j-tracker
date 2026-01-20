@@ -719,3 +719,42 @@ header h1 {
         font-size: 2rem;
     }
 }
+
+/* Update Banner */
+#update-banner {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #00d4ff, #7b2cbf);
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 25px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 4px 20px rgba(0, 212, 255, 0.4);
+    z-index: 1000;
+    animation: slideUp 0.3s ease;
+}
+
+#update-banner button {
+    background: #fff;
+    color: #1a1a2e;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 15px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateX(-50%) translateY(100px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+    }
+}

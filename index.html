@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Triple J Bet Tracker</title>
-    <link rel="stylesheet" href="styles.css?v=6">
+    <link rel="stylesheet" href="styles.css?v=7">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1a1a2e">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -63,7 +63,48 @@
     <script src="script.js?v=6"></script>
     <script>
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./sw.js');
+            navigator.serviceWorker.register('./sw.js').then((registration) => {
+                // Check for updates periodically
+                setInterval(() => registration.update(), 60000);
+
+                // Listen for new service worker
+                registration.addEventListener('updatefound', () => {
+                    const newWorker = registration.installing;
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            // New version available - show update banner
+                            showUpdateBanner();
+                        }
+                    });
+                });
+            });
+
+            // Reload when new service worker takes over
+            let refreshing = false;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (!refreshing) {
+                    refreshing = true;
+                    window.location.reload();
+                }
+            });
+        }
+
+        function showUpdateBanner() {
+            const banner = document.createElement('div');
+            banner.id = 'update-banner';
+            banner.innerHTML = `
+                <span>New version available!</span>
+                <button onclick="updateApp()">Update Now</button>
+            `;
+            document.body.appendChild(banner);
+        }
+
+        function updateApp() {
+            navigator.serviceWorker.getRegistration().then((reg) => {
+                if (reg && reg.waiting) {
+                    reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+                }
+            });
         }
     </script>
 </body>

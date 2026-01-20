@@ -1,4 +1,4 @@
-const CACHE_NAME = 'triple-j-v4';
+const CACHE_NAME = 'triple-j-v5';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -17,7 +17,13 @@ self.addEventListener('install', (event) => {
       return cache.addAll(STATIC_ASSETS);
     })
   );
-  self.skipWaiting();
+});
+
+// Listen for skip waiting message from client
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 // Activate: clean up old caches
