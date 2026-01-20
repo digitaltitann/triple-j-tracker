@@ -11,6 +11,7 @@ const SportsAPI = {
     ESPN_NFL_SCOREBOARD: 'https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard',
     ESPN_NFL_GAME: 'https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event=',
     ESPN_NBA_SCOREBOARD: 'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard',
+    ESPN_NBA_GAME: 'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/summary?event=',
 
     // Caches
     nbaGamesCache: null,
@@ -50,7 +51,63 @@ const SportsAPI = {
 
     // ==================== NBA Methods ====================
 
-    // Get today's NBA games
+    // Get today's NBA games from ESPN (for pre-game roster lookups)
+    async getESPNNBAGames() {
+        try {
+            const response = await fetch(this.ESPN_NBA_SCOREBOARD);
+            if (!response.ok) return [];
+            const data = await response.json();
+            return data.events || [];
+        } catch (error) {
+            console.error('Error fetching ESPN NBA games:', error);
+            return [];
+        }
+    },
+
+    // Get ESPN NBA game details (includes rosters)
+    async getESPNNBAGameDetails(gameId) {
+        try {
+            const response = await fetch(this.ESPN_NBA_GAME + gameId);
+            if (!response.ok) return null;
+            return await response.json();
+        } catch (error) {
+            console.error('Error fetching ESPN NBA game details:', error);
+            return null;
+        }
+    },
+
+    // Find player in ESPN NBA game rosters
+    findPlayerInESPNRoster(gameDetails, playerName) {
+        const searchName = playerName.toLowerCase();
+        const rosters = gameDetails?.rosters;
+
+        if (!rosters) return null;
+
+        for (const team of rosters) {
+            for (const entry of team.roster || []) {
+                const athlete = entry.athlete;
+                if (!athlete) continue;
+
+                const fullName = athlete.displayName?.toLowerCase() || '';
+                const shortName = athlete.shortName?.toLowerCase() || '';
+                const lastName = athlete.lastName?.toLowerCase() || '';
+
+                if (fullName.includes(searchName) || searchName.includes(fullName) ||
+                    shortName.includes(searchName) || searchName.includes(lastName) ||
+                    lastName === searchName.split(' ').pop()) {
+                    return {
+                        found: true,
+                        teamId: team.team?.id,
+                        teamAbbrev: team.team?.abbreviation,
+                        teamName: team.team?.displayName
+                    };
+                }
+            }
+        }
+        return null;
+    },
+
+    // Get today's NBA games from CDN
     async getTodaysGames() {
         if (this.nbaGamesCache && this.nbaGamesCacheTime && (Date.now() - this.nbaGamesCacheTime) < 30000) {
             return this.nbaGamesCache;
@@ -172,10 +229,40 @@ const SportsAPI = {
                 }
             }
 
-            // Second pass: check if there are any games that haven't started yet
+            // Second pass: use ESPN to find which scheduled game the player is in
             const scheduledGames = games.filter(g => g.gameStatus < 2);
             if (scheduledGames.length > 0) {
-                // Can't verify which game player is in pre-game
+                // Get ESPN games to look up player rosters
+                const espnGames = await this.getESPNNBAGames();
+
+                for (const espnGame of espnGames) {
+                    const state = espnGame.status?.type?.state;
+                    if (state !== 'pre') continue; // Only check pre-game
+
+                    const gameDetails = await this.getESPNNBAGameDetails(espnGame.id);
+                    if (!gameDetails) continue;
+
+                    const playerInfo = this.findPlayerInESPNRoster(gameDetails, playerName);
+                    if (playerInfo) {
+                        // Found the player's game!
+                        const competition = espnGame.competitions?.[0];
+                        const homeTeam = competition?.competitors?.find(c => c.homeAway === 'home');
+                        const awayTeam = competition?.competitors?.find(c => c.homeAway === 'away');
+                        const startTime = espnGame.status?.type?.shortDetail || espnGame.status?.type?.detail;
+
+                        return {
+                            current: 0,
+                            found: true,
+                            noGame: false,
+                            notStarted: true,
+                            gameStatus: startTime,
+                            gameInfo: `${awayTeam?.team?.abbreviation} vs ${homeTeam?.team?.abbreviation}`,
+                            isLive: false
+                        };
+                    }
+                }
+
+                // Fallback if player not found in any roster (shouldn't happen often)
                 return {
                     current: 0,
                     found: true,
@@ -366,10 +453,33 @@ const SportsAPI = {
                 }
             }
 
-            // Second pass: check for pre-game games and return start time
+            // Second pass: find player's scheduled game using roster lookup
             const scheduledGames = games.filter(g => g.status?.type?.state === 'pre');
             if (scheduledGames.length > 0) {
-                // Can't verify which game player is in pre-game
+                for (const game of scheduledGames) {
+                    const gameDetails = await this.getNFLGameDetails(game.id);
+                    if (!gameDetails) continue;
+
+                    const playerInfo = this.findPlayerInESPNRoster(gameDetails, playerName);
+                    if (playerInfo) {
+                        const competition = game.competitions?.[0];
+                        const homeTeam = competition?.competitors?.find(c => c.homeAway === 'home');
+                        const awayTeam = competition?.competitors?.find(c => c.homeAway === 'away');
+                        const startTime = game.status?.type?.shortDetail || game.status?.type?.detail;
+
+                        return {
+                            current: 0,
+                            found: true,
+                            noGame: false,
+                            notStarted: true,
+                            gameStatus: startTime,
+                            gameInfo: `${awayTeam?.team?.abbreviation} vs ${homeTeam?.team?.abbreviation}`,
+                            isLive: false
+                        };
+                    }
+                }
+
+                // Fallback if player not found in any roster
                 return {
                     current: 0,
                     found: true,

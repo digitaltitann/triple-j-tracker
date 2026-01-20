@@ -313,6 +313,7 @@ function renderMoneylineCard(bet) {
             <div class="card-footer">
                 <div class="footer-left">
                     <span class="status-badge ${status}">${statusText}</span>
+                    ${bet.notStarted && bet.gameInfo ? `<span class="game-info">${bet.gameInfo}</span>` : ''}
                     ${bet.gameStatus && !bet.notStarted ? `<span class="game-time">${bet.gameStatus}</span>` : ''}
                 </div>
                 <button class="btn-update" onclick="refreshBet('${bet.id}')">Update</button>
@@ -369,6 +370,7 @@ function renderSpreadCard(bet) {
             <div class="card-footer">
                 <div class="footer-left">
                     <span class="status-badge ${status}">${statusText}</span>
+                    ${bet.notStarted && bet.gameInfo ? `<span class="game-info">${bet.gameInfo}</span>` : ''}
                     ${bet.gameStatus && !bet.notStarted ? `<span class="game-time">${bet.gameStatus}</span>` : ''}
                 </div>
                 <button class="btn-update" onclick="refreshBet('${bet.id}')">Update</button>
