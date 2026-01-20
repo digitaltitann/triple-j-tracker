@@ -214,9 +214,12 @@ function renderPlayerPropCard(player) {
     }
 
     // Handle different states
-    if (player.found === false) {
+    if (player.noGame || player.found === false) {
         status = 'pending';
         statusText = 'NO GAME TODAY';
+    } else if (player.notStarted) {
+        status = 'pending';
+        statusText = player.gameStatus || 'NOT STARTED';
     } else if (player.isLive) {
         statusText = `LIVE - ${statusText}`;
     }
@@ -269,7 +272,7 @@ function renderMoneylineCard(bet) {
 
     if (bet.notStarted) {
         status = 'pending';
-        statusText = 'NOT STARTED';
+        statusText = bet.gameStatus || 'NOT STARTED';
     } else if (bet.noGame || bet.found === false) {
         status = 'pending';
         statusText = 'NO GAME TODAY';
@@ -325,7 +328,7 @@ function renderSpreadCard(bet) {
 
     if (bet.notStarted) {
         status = 'pending';
-        statusText = 'NOT STARTED';
+        statusText = bet.gameStatus || 'NOT STARTED';
     } else if (bet.noGame || bet.found === false) {
         status = 'pending';
         statusText = 'NO GAME TODAY';
@@ -384,7 +387,7 @@ function renderTotalCard(bet) {
 
     if (bet.notStarted) {
         status = 'pending';
-        statusText = 'NOT STARTED';
+        statusText = bet.gameStatus || 'NOT STARTED';
     } else if (bet.noGame || bet.found === false) {
         status = 'pending';
         statusText = 'NO GAME TODAY';

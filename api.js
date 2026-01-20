@@ -143,6 +143,7 @@ const SportsAPI = {
                 return { current: 0, found: true, noGame: true, message: 'No games today' };
             }
 
+            // First pass: check live/finished games
             for (const game of games) {
                 if (game.gameStatus < 2) continue;
 
@@ -169,6 +170,27 @@ const SportsAPI = {
                         onCourt: player.oncourt === "1"
                     };
                 }
+            }
+
+            // Second pass: check if player has a game that hasn't started yet
+            for (const game of games) {
+                if (game.gameStatus >= 2) continue; // Already checked these
+
+                const homeTeam = game.homeTeam?.teamTricode || '';
+                const awayTeam = game.awayTeam?.teamTricode || '';
+
+                // Check if player name might be on either team (we can't check roster without boxscore)
+                // Return the game info with start time
+                // Note: NBA CDN doesn't give us roster for pre-game, so we show game time for any scheduled game
+                return {
+                    current: 0,
+                    found: true,
+                    noGame: false,
+                    notStarted: true,
+                    gameStatus: game.gameStatusText,
+                    gameInfo: `${awayTeam} vs ${homeTeam}`,
+                    isLive: false
+                };
             }
 
             return { current: 0, found: false, noGame: true, message: 'Player not in today\'s games' };
@@ -324,9 +346,9 @@ const SportsAPI = {
                 return { current: 0, found: true, noGame: true, message: 'No NFL games today' };
             }
 
+            // First pass: check live/finished games
             for (const game of games) {
                 const state = game.status?.type?.state;
-                // Skip pre-game
                 if (state === 'pre') continue;
 
                 const gameDetails = await this.getNFLGameDetails(game.id);
@@ -345,9 +367,29 @@ const SportsAPI = {
                         gameStatus: game.status?.type?.shortDetail || game.status?.type?.detail,
                         gameInfo: `${awayTeam?.team?.abbreviation} ${awayTeam?.score || 0} - ${homeTeam?.score || 0} ${homeTeam?.team?.abbreviation}`,
                         isLive: state === 'in',
-                        onCourt: null // NFL doesn't have this concept
+                        onCourt: null
                     };
                 }
+            }
+
+            // Second pass: check for pre-game games and return start time
+            for (const game of games) {
+                const state = game.status?.type?.state;
+                if (state !== 'pre') continue;
+
+                const competition = game.competitions?.[0];
+                const homeTeam = competition?.competitors?.find(c => c.homeAway === 'home');
+                const awayTeam = competition?.competitors?.find(c => c.homeAway === 'away');
+
+                return {
+                    current: 0,
+                    found: true,
+                    noGame: false,
+                    notStarted: true,
+                    gameStatus: game.status?.type?.shortDetail || game.status?.type?.detail,
+                    gameInfo: `${awayTeam?.team?.abbreviation} vs ${homeTeam?.team?.abbreviation}`,
+                    isLive: false
+                };
             }
 
             return { current: 0, found: false, noGame: true, message: 'Player not in today\'s NFL games' };
