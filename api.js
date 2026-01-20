@@ -175,15 +175,14 @@ const SportsAPI = {
             // Second pass: check if there are any games that haven't started yet
             const scheduledGames = games.filter(g => g.gameStatus < 2);
             if (scheduledGames.length > 0) {
-                // Can't verify which game player is in pre-game, just show earliest start time
-                const nextGame = scheduledGames[0];
+                // Can't verify which game player is in pre-game
                 return {
                     current: 0,
                     found: true,
                     noGame: false,
                     notStarted: true,
-                    gameStatus: nextGame.gameStatusText,
-                    gameInfo: null, // Don't show matchup since we can't verify player's team
+                    gameStatus: 'Scheduled',
+                    gameInfo: null,
                     isLive: false
                 };
             }
@@ -370,15 +369,14 @@ const SportsAPI = {
             // Second pass: check for pre-game games and return start time
             const scheduledGames = games.filter(g => g.status?.type?.state === 'pre');
             if (scheduledGames.length > 0) {
-                // Can't verify which game player is in pre-game, just show earliest start time
-                const nextGame = scheduledGames[0];
+                // Can't verify which game player is in pre-game
                 return {
                     current: 0,
                     found: true,
                     noGame: false,
                     notStarted: true,
-                    gameStatus: nextGame.status?.type?.shortDetail || nextGame.status?.type?.detail,
-                    gameInfo: null, // Don't show matchup since we can't verify player's team
+                    gameStatus: 'Scheduled',
+                    gameInfo: null,
                     isLive: false
                 };
             }
