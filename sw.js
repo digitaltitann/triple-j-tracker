@@ -1,4 +1,4 @@
-const CACHE_NAME = 'triple-j-v3';
+const CACHE_NAME = 'triple-j-v4';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -34,23 +34,40 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch: cache-first for static assets, network-first for API calls
+// Fetch: network-first for API calls, network-first for JS/CSS (to get updates), cache-first for images
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
-  // Network-first for API calls (need fresh NBA data)
-  if (url.hostname.includes('codetabs.com') || url.hostname.includes('nba.com')) {
+  // Network-first for API calls (need fresh sports data)
+  if (url.hostname.includes('codetabs.com') || url.hostname.includes('nba.com') || url.hostname.includes('espn.com')) {
     event.respondWith(
       fetch(event.request).catch(() => caches.match(event.request))
     );
     return;
   }
 
-  // Cache-first for static assets
+  // Network-first for HTML/JS/CSS (to get code updates quickly)
+  if (url.pathname.endsWith('.html') || url.pathname.endsWith('.js') || url.pathname.endsWith('.css') || url.pathname === '/') {
+    event.respondWith(
+      fetch(event.request)
+        .then((fetchResponse) => {
+          // Cache the fresh response
+          if (event.request.method === 'GET') {
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, fetchResponse.clone());
+            });
+          }
+          return fetchResponse;
+        })
+        .catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
+  // Cache-first for images and other static assets
   event.respondWith(
     caches.match(event.request).then((response) => {
       return response || fetch(event.request).then((fetchResponse) => {
-        // Don't cache non-GET or cross-origin requests
         if (event.request.method !== 'GET' || !url.origin.includes(self.location.origin)) {
           return fetchResponse;
         }
