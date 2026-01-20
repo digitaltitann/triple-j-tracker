@@ -258,7 +258,7 @@ function renderPlayerPropCard(player) {
                 <div class="footer-left">
                     <span class="status-badge ${status}">${statusText}</span>
                     ${player.gameInfo ? `<span class="game-info">${player.gameInfo}</span>` : ''}
-                    ${player.gameStatus ? `<span class="game-time">${player.gameStatus}</span>` : ''}
+                    ${player.gameStatus && !player.notStarted ? `<span class="game-time">${player.gameStatus}</span>` : ''}
                 </div>
                 <button class="btn-update" onclick="updateManually('${player.id}')">Update</button>
             </div>
@@ -313,7 +313,7 @@ function renderMoneylineCard(bet) {
             <div class="card-footer">
                 <div class="footer-left">
                     <span class="status-badge ${status}">${statusText}</span>
-                    ${bet.gameStatus ? `<span class="game-time">${bet.gameStatus}</span>` : ''}
+                    ${bet.gameStatus && !bet.notStarted ? `<span class="game-time">${bet.gameStatus}</span>` : ''}
                 </div>
                 <button class="btn-update" onclick="refreshBet('${bet.id}')">Update</button>
             </div>
@@ -369,7 +369,7 @@ function renderSpreadCard(bet) {
             <div class="card-footer">
                 <div class="footer-left">
                     <span class="status-badge ${status}">${statusText}</span>
-                    ${bet.gameStatus ? `<span class="game-time">${bet.gameStatus}</span>` : ''}
+                    ${bet.gameStatus && !bet.notStarted ? `<span class="game-time">${bet.gameStatus}</span>` : ''}
                 </div>
                 <button class="btn-update" onclick="refreshBet('${bet.id}')">Update</button>
             </div>
@@ -427,7 +427,7 @@ function renderTotalCard(bet) {
                 <div class="footer-left">
                     <span class="status-badge ${status}">${statusText}</span>
                     ${bet.gameInfo ? `<span class="game-info">${bet.gameInfo}</span>` : ''}
-                    ${bet.gameStatus ? `<span class="game-time">${bet.gameStatus}</span>` : ''}
+                    ${bet.gameStatus && !bet.notStarted ? `<span class="game-time">${bet.gameStatus}</span>` : ''}
                 </div>
                 <button class="btn-update" onclick="refreshBet('${bet.id}')">Update</button>
             </div>
