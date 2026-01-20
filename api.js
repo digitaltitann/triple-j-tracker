@@ -172,23 +172,18 @@ const SportsAPI = {
                 }
             }
 
-            // Second pass: check if player has a game that hasn't started yet
-            for (const game of games) {
-                if (game.gameStatus >= 2) continue; // Already checked these
-
-                const homeTeam = game.homeTeam?.teamTricode || '';
-                const awayTeam = game.awayTeam?.teamTricode || '';
-
-                // Check if player name might be on either team (we can't check roster without boxscore)
-                // Return the game info with start time
-                // Note: NBA CDN doesn't give us roster for pre-game, so we show game time for any scheduled game
+            // Second pass: check if there are any games that haven't started yet
+            const scheduledGames = games.filter(g => g.gameStatus < 2);
+            if (scheduledGames.length > 0) {
+                // Can't verify which game player is in pre-game, just show earliest start time
+                const nextGame = scheduledGames[0];
                 return {
                     current: 0,
                     found: true,
                     noGame: false,
                     notStarted: true,
-                    gameStatus: game.gameStatusText,
-                    gameInfo: `${awayTeam} vs ${homeTeam}`,
+                    gameStatus: nextGame.gameStatusText,
+                    gameInfo: null, // Don't show matchup since we can't verify player's team
                     isLive: false
                 };
             }
@@ -373,21 +368,17 @@ const SportsAPI = {
             }
 
             // Second pass: check for pre-game games and return start time
-            for (const game of games) {
-                const state = game.status?.type?.state;
-                if (state !== 'pre') continue;
-
-                const competition = game.competitions?.[0];
-                const homeTeam = competition?.competitors?.find(c => c.homeAway === 'home');
-                const awayTeam = competition?.competitors?.find(c => c.homeAway === 'away');
-
+            const scheduledGames = games.filter(g => g.status?.type?.state === 'pre');
+            if (scheduledGames.length > 0) {
+                // Can't verify which game player is in pre-game, just show earliest start time
+                const nextGame = scheduledGames[0];
                 return {
                     current: 0,
                     found: true,
                     noGame: false,
                     notStarted: true,
-                    gameStatus: game.status?.type?.shortDetail || game.status?.type?.detail,
-                    gameInfo: `${awayTeam?.team?.abbreviation} vs ${homeTeam?.team?.abbreviation}`,
+                    gameStatus: nextGame.status?.type?.shortDetail || nextGame.status?.type?.detail,
+                    gameInfo: null, // Don't show matchup since we can't verify player's team
                     isLive: false
                 };
             }

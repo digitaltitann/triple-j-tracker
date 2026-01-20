@@ -1,4 +1,4 @@
-const CACHE_NAME = 'triple-j-v5';
+const CACHE_NAME = 'triple-j-v6';
 const STATIC_ASSETS = [
   './',
   './index.html',
