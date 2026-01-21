@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Triple J Bet Tracker</title>
-    <link rel="stylesheet" href="styles.css?v=8">
+    <link rel="stylesheet" href="styles.css?v=9">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1a1a2e">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -29,13 +29,20 @@
                         placeholder="Type what you want to track, e.g.:&#10;lebron 25+ points, mahomes 300+ passing yards&#10;Chiefs ML, Lakers -5.5, Over 45.5 Chiefs Lions"
                         rows="5"
                     ></textarea>
-                    <button id="track-btn" class="btn-track">Track Stats</button>
+                    <div class="input-buttons">
+                        <button id="track-btn" class="btn-track">Track Stats</button>
+                        <label id="upload-btn" class="btn-upload" title="Upload bet slip image">
+                            <input type="file" id="image-input" accept="image/*" hidden>
+                            <span class="upload-icon">📷</span>
+                        </label>
+                    </div>
+                    <div id="ocr-status" class="ocr-status hidden"></div>
                 </div>
                 <div class="crew-photo">
                     <img src="triple%20j.jpg" alt="Triple J Crew">
                 </div>
             </div>
-            <p class="input-hint">Player props: "lebron 25+ points" | Team bets: "Chiefs ML", "Lakers -5.5", "Over 220 Lakers Celtics"</p>
+            <p class="input-hint">Player props: "lebron 25+ points" | Team bets: "Chiefs ML", "Lakers -5.5" | Or tap 📷 to upload a bet slip</p>
         </section>
 
         <!-- Live Stats Cards -->
@@ -58,9 +65,10 @@
         </section>
     </div>
 
-    <script src="parser.js?v=8"></script>
-    <script src="api.js?v=8"></script>
-    <script src="script.js?v=8"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <script src="parser.js?v=9"></script>
+    <script src="api.js?v=9"></script>
+    <script src="script.js?v=9"></script>
     <script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('./sw.js').then((registration) => {

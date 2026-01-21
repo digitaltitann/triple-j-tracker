@@ -488,6 +488,122 @@ function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+// ==================== Image Upload & OCR ====================
+
+const imageInput = document.getElementById('image-input');
+const ocrStatus = document.getElementById('ocr-status');
+
+// Handle image upload
+imageInput?.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    await processImageWithOCR(file);
+    imageInput.value = ''; // Reset for next upload
+});
+
+// Process image with Tesseract OCR
+async function processImageWithOCR(file) {
+    showOCRStatus('Analyzing image...', 'loading');
+
+    try {
+        const result = await Tesseract.recognize(file, 'eng', {
+            logger: (m) => {
+                if (m.status === 'recognizing text') {
+                    const pct = Math.round(m.progress * 100);
+                    showOCRStatus(`Reading text... ${pct}%`, 'loading');
+                }
+            }
+        });
+
+        const text = result.data.text;
+        console.log('OCR Result:', text);
+
+        if (!text || text.trim().length < 3) {
+            showOCRStatus('Could not read text from image', 'error');
+            return;
+        }
+
+        // Try to extract bets from the OCR text
+        const extractedBets = extractBetsFromOCR(text);
+
+        if (extractedBets.length > 0) {
+            // Put extracted text in the input for user review
+            statsInput.value = extractedBets.join('\n');
+            showOCRStatus(`Found ${extractedBets.length} potential bet(s) - review and click Track`, 'success');
+        } else {
+            // Put raw text in input for manual editing
+            statsInput.value = cleanOCRText(text);
+            showOCRStatus('Text extracted - edit as needed and click Track', 'warning');
+        }
+
+    } catch (error) {
+        console.error('OCR Error:', error);
+        showOCRStatus('Error reading image', 'error');
+    }
+}
+
+// Extract bet-like patterns from OCR text
+function extractBetsFromOCR(text) {
+    const bets = [];
+    const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+
+    for (const line of lines) {
+        // Try to parse each line as a bet
+        const parsed = PropParser.parseMultipleProps(line);
+        if (parsed.length > 0) {
+            bets.push(line);
+            continue;
+        }
+
+        // Look for common bet patterns even if parser doesn't recognize them
+        const betPatterns = [
+            // Player props: "Name Over/Under X.X Stat"
+            /([A-Za-z\.\s]+)\s+(over|under|o|u)\s*(\d+\.?\d*)\s*(points?|pts?|rebounds?|reb|assists?|ast|yards?|yds?|tds?|touchdowns?|receptions?|rec)/i,
+            // Spreads: "Team +/-X.X"
+            /([A-Za-z\s]+)\s*([+-]\d+\.?\d*)/,
+            // Moneyline: "Team ML" or "Team Moneyline"
+            /([A-Za-z\s]+)\s+(ml|moneyline)/i,
+            // Over/Under totals: "Over/Under X.X"
+            /(over|under)\s*(\d+\.?\d*)/i
+        ];
+
+        for (const pattern of betPatterns) {
+            if (pattern.test(line)) {
+                bets.push(line);
+                break;
+            }
+        }
+    }
+
+    return bets;
+}
+
+// Clean up OCR text for manual editing
+function cleanOCRText(text) {
+    return text
+        .split('\n')
+        .map(l => l.trim())
+        .filter(l => l.length > 2)
+        .filter(l => !/^[\d\W]+$/.test(l)) // Remove lines that are just numbers/symbols
+        .join('\n');
+}
+
+// Show OCR status message
+function showOCRStatus(message, type) {
+    if (!ocrStatus) return;
+
+    ocrStatus.textContent = message;
+    ocrStatus.className = `ocr-status ${type}`;
+    ocrStatus.classList.remove('hidden');
+
+    if (type === 'success' || type === 'warning' || type === 'error') {
+        setTimeout(() => {
+            ocrStatus.classList.add('hidden');
+        }, 5000);
+    }
+}
+
 // Make functions available globally
 window.removePlayer = removePlayer;
 window.updateManually = updateManually;

@@ -758,3 +758,88 @@ header h1 {
         opacity: 1;
     }
 }
+
+/* Image Upload & OCR */
+.input-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-upload {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 18px 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-upload:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(0, 212, 255, 0.5);
+}
+
+.upload-icon {
+    font-size: 1.4rem;
+}
+
+.ocr-status {
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.ocr-status.hidden {
+    display: none;
+}
+
+.ocr-status.loading {
+    background: rgba(0, 212, 255, 0.15);
+    color: #00d4ff;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+.ocr-status.success {
+    background: rgba(0, 255, 136, 0.15);
+    color: #00ff88;
+}
+
+.ocr-status.warning {
+    background: rgba(255, 193, 7, 0.15);
+    color: #ffc107;
+}
+
+.ocr-status.error {
+    background: rgba(255, 71, 87, 0.15);
+    color: #ff4757;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+@media (max-width: 768px) {
+    .input-buttons {
+        flex-direction: row;
+    }
+
+    .btn-track {
+        flex: 1;
+        width: auto;
+    }
+
+    .btn-upload {
+        padding: 15px 20px;
+    }
+
+    .ocr-status {
+        font-size: 0.85rem;
+        padding: 10px 12px;
+    }
+}
