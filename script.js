@@ -548,6 +548,14 @@ function extractBetsFromOCR(text) {
     const bets = [];
     const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
 
+    // First pass: try DraftKings multi-line format
+    // DraftKings shows "10+" on one line, then "Player Name Stat Type" on next
+    const dkBets = extractDraftKingsBets(lines);
+    if (dkBets.length > 0) {
+        return dkBets;
+    }
+
+    // Fallback: try single-line parsing
     for (const line of lines) {
         // Try to parse each line as a bet
         const parsed = PropParser.parseMultipleProps(line);
@@ -573,6 +581,67 @@ function extractBetsFromOCR(text) {
                 bets.push(line);
                 break;
             }
+        }
+    }
+
+    return bets;
+}
+
+// Extract bets from DraftKings format where target is on separate line from player/stat
+function extractDraftKingsBets(lines) {
+    const bets = [];
+
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const nextLine = lines[i + 1] || '';
+
+        // Pattern 1: "10+" or "2+" followed by "Player Name Stat Type"
+        const targetMatch = line.match(/^(\d+\.?\d*)\+?\s*$/);
+        if (targetMatch && nextLine) {
+            const target = targetMatch[1];
+            // Check if next line has player name and stat
+            const statPatterns = [
+                { regex: /(.+?)\s+(rebounds?|reb)/i, stat: 'rebounds' },
+                { regex: /(.+?)\s+(points?|pts)/i, stat: 'points' },
+                { regex: /(.+?)\s+(assists?|ast)/i, stat: 'assists' },
+                { regex: /(.+?)\s+(three\s*pointers?\s*made|threes|3pm)/i, stat: 'threes' },
+                { regex: /(.+?)\s+(steals?|stl)/i, stat: 'steals' },
+                { regex: /(.+?)\s+(blocks?|blk)/i, stat: 'blocks' },
+                { regex: /(.+?)\s+(passing\s*yards?|pass\s*yds?)/i, stat: 'passing yards' },
+                { regex: /(.+?)\s+(rushing\s*yards?|rush\s*yds?)/i, stat: 'rushing yards' },
+                { regex: /(.+?)\s+(receiving\s*yards?|rec\s*yds?)/i, stat: 'receiving yards' },
+                { regex: /(.+?)\s+(receptions?|rec)$/i, stat: 'receptions' },
+            ];
+
+            for (const { regex, stat } of statPatterns) {
+                const match = nextLine.match(regex);
+                if (match) {
+                    const playerName = match[1].trim();
+                    bets.push(`${playerName} ${target}+ ${stat}`);
+                    i++; // Skip the next line since we consumed it
+                    break;
+                }
+            }
+            continue;
+        }
+
+        // Pattern 2: "Team -3.5" or "Team +7" spread
+        const spreadMatch = line.match(/^([\w\s]+?)\s*([+-]\d+\.?\d*)$/);
+        if (spreadMatch) {
+            const team = spreadMatch[1].trim();
+            const spread = spreadMatch[2];
+            // Skip if it looks like a score or odds
+            if (!team.match(/^\d/) && team.length > 2) {
+                bets.push(`${team} ${spread}`);
+                continue;
+            }
+        }
+
+        // Pattern 3: "Team ML" or moneyline
+        const mlMatch = line.match(/^([\w\s]+?)\s+(ml|moneyline)$/i);
+        if (mlMatch) {
+            bets.push(`${mlMatch[1].trim()} ML`);
+            continue;
         }
     }
 
