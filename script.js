@@ -488,7 +488,7 @@ function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// ==================== Image Upload & OCR ====================
+// ==================== Image Upload & AI Vision ====================
 
 const imageInput = document.getElementById('image-input');
 const ocrStatus = document.getElementById('ocr-status');
@@ -498,172 +498,142 @@ imageInput?.addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    await processImageWithOCR(file);
+    await processImageWithAI(file);
     imageInput.value = ''; // Reset for next upload
 });
 
-// Process image with Tesseract OCR
-async function processImageWithOCR(file) {
-    showOCRStatus('Analyzing image...', 'loading');
+// Convert file to base64
+function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+            const base64 = reader.result.split(',')[1];
+            resolve(base64);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
+
+// Process image with Claude Vision API
+async function processImageWithAI(file) {
+    const apiKey = localStorage.getItem('anthropic_api_key');
+    if (!apiKey) {
+        showOCRStatus('Set your Anthropic API key first (tap ⚙️ API Key)', 'error');
+        return;
+    }
+
+    showOCRStatus('Analyzing bet slip...', 'loading');
 
     try {
-        const result = await Tesseract.recognize(file, 'eng', {
-            logger: (m) => {
-                if (m.status === 'recognizing text') {
-                    const pct = Math.round(m.progress * 100);
-                    showOCRStatus(`Reading text... ${pct}%`, 'loading');
-                }
-            }
+        const base64Image = await fileToBase64(file);
+        const mediaType = file.type || 'image/jpeg';
+
+        const response = await fetch('https://api.anthropic.com/v1/messages', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': apiKey,
+                'anthropic-version': '2023-06-01',
+                'anthropic-dangerous-direct-browser-access': 'true'
+            },
+            body: JSON.stringify({
+                model: 'claude-sonnet-4-20250514',
+                max_tokens: 1024,
+                messages: [{
+                    role: 'user',
+                    content: [
+                        {
+                            type: 'image',
+                            source: {
+                                type: 'base64',
+                                media_type: mediaType,
+                                data: base64Image
+                            }
+                        },
+                        {
+                            type: 'text',
+                            text: `Extract all bets from this sportsbook screenshot. For each bet, output one line in this exact format:
+
+For player props: "PlayerName Target+ StatType"
+Examples: "LeBron James 25+ points", "Mahomes 300+ passing yards", "Josh Giddey 15+ points assists"
+
+For combo stats use these formats:
+- Points + Assists → "Name 15+ points assists"
+- Points + Rebounds → "Name 20+ points rebounds"
+- Points + Rebounds + Assists → "Name 30+ points rebounds assists"
+
+For spreads: "TeamName -3.5" or "TeamName +7"
+For moneyline: "TeamName ML"
+For game totals: "Over 220.5 Team1 Team2"
+
+Use the team's common name (Knicks, Lakers, Chiefs, etc), not abbreviations.
+Output ONLY the bet lines, one per line. No other text.`
+                        }
+                    ]
+                }]
+            })
         });
 
-        const text = result.data.text;
-        console.log('OCR Result:', text);
-
-        if (!text || text.trim().length < 3) {
-            showOCRStatus('Could not read text from image', 'error');
+        if (!response.ok) {
+            const error = await response.json();
+            console.error('Claude API error:', error);
+            if (response.status === 401) {
+                showOCRStatus('Invalid API key - check your key in settings', 'error');
+            } else {
+                showOCRStatus(`API error: ${error.error?.message || 'Unknown error'}`, 'error');
+            }
             return;
         }
 
-        // Try to extract bets from the OCR text
-        const extractedBets = extractBetsFromOCR(text);
+        const data = await response.json();
+        const text = data.content?.[0]?.text || '';
+        console.log('Claude Vision Result:', text);
 
-        if (extractedBets.length > 0) {
-            // Put extracted text in the input for user review
-            statsInput.value = extractedBets.join('\n');
-            showOCRStatus(`Found ${extractedBets.length} potential bet(s) - review and click Track`, 'success');
-        } else {
-            // Put raw text in input for manual editing
-            statsInput.value = cleanOCRText(text);
-            showOCRStatus('Text extracted - edit as needed and click Track', 'warning');
+        if (!text.trim()) {
+            showOCRStatus('Could not extract bets from image', 'error');
+            return;
         }
+
+        const lines = text.trim().split('\n').filter(l => l.trim().length > 0);
+        statsInput.value = lines.join('\n');
+        showOCRStatus(`Found ${lines.length} bet(s) - review and click Track`, 'success');
 
     } catch (error) {
-        console.error('OCR Error:', error);
-        showOCRStatus('Error reading image', 'error');
+        console.error('AI Vision Error:', error);
+        showOCRStatus('Error connecting to API', 'error');
     }
 }
 
-// Extract bet-like patterns from OCR text
-function extractBetsFromOCR(text) {
-    const bets = [];
-    const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+// ==================== API Key Management ====================
 
-    // First pass: try DraftKings multi-line format
-    // DraftKings shows "10+" on one line, then "Player Name Stat Type" on next
-    const dkBets = extractDraftKingsBets(lines);
-    if (dkBets.length > 0) {
-        return dkBets;
-    }
-
-    // Fallback: try single-line parsing
-    for (const line of lines) {
-        // Try to parse each line as a bet
-        const parsed = PropParser.parseMultipleProps(line);
-        if (parsed.length > 0) {
-            bets.push(line);
-            continue;
+function toggleApiKey() {
+    const container = document.getElementById('api-key-container');
+    container.classList.toggle('hidden');
+    if (!container.classList.contains('hidden')) {
+        const input = document.getElementById('api-key-input');
+        const saved = localStorage.getItem('anthropic_api_key');
+        if (saved) {
+            input.value = saved;
         }
-
-        // Look for common bet patterns even if parser doesn't recognize them
-        const betPatterns = [
-            // Player props: "Name Over/Under X.X Stat"
-            /([A-Za-z\.\s]+)\s+(over|under|o|u)\s*(\d+\.?\d*)\s*(points?|pts?|rebounds?|reb|assists?|ast|yards?|yds?|tds?|touchdowns?|receptions?|rec)/i,
-            // Spreads: "Team +/-X.X"
-            /([A-Za-z\s]+)\s*([+-]\d+\.?\d*)/,
-            // Moneyline: "Team ML" or "Team Moneyline"
-            /([A-Za-z\s]+)\s+(ml|moneyline)/i,
-            // Over/Under totals: "Over/Under X.X"
-            /(over|under)\s*(\d+\.?\d*)/i
-        ];
-
-        for (const pattern of betPatterns) {
-            if (pattern.test(line)) {
-                bets.push(line);
-                break;
-            }
-        }
+        input.focus();
     }
-
-    return bets;
 }
 
-// Extract bets from DraftKings format where target is on separate line from player/stat
-function extractDraftKingsBets(lines) {
-    const bets = [];
-
-    for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-        const nextLine = lines[i + 1] || '';
-
-        // Pattern 1: "10+" or "2+" followed by "Player Name Stat Type"
-        const targetMatch = line.match(/^(\d+\.?\d*)\+?\s*$/);
-        if (targetMatch && nextLine) {
-            const target = targetMatch[1];
-            // Check if next line has player name and stat
-            // Order matters: check combos first (more specific), then individual stats
-            const statPatterns = [
-                { regex: /(.+?)\s+(points?\s*\+\s*rebounds?\s*\+\s*assists?|pts?\s*\+\s*reb\s*\+\s*ast|pra)/i, stat: 'points rebounds assists' },
-                { regex: /(.+?)\s+(points?\s*\+\s*rebounds?|pts?\s*\+\s*reb)/i, stat: 'points rebounds' },
-                { regex: /(.+?)\s+(points?\s*\+\s*assists?|pts?\s*\+\s*ast)/i, stat: 'points assists' },
-                { regex: /(.+?)\s+(rebounds?\s*\+\s*assists?|reb\s*\+\s*ast)/i, stat: 'rebounds assists' },
-                { regex: /(.+?)\s+(three\s*pointers?\s*made|threes|3pm)/i, stat: 'threes' },
-                { regex: /(.+?)\s+(rebounds?|reb)/i, stat: 'rebounds' },
-                { regex: /(.+?)\s+(points?|pts)/i, stat: 'points' },
-                { regex: /(.+?)\s+(assists?|ast)/i, stat: 'assists' },
-                { regex: /(.+?)\s+(steals?|stl)/i, stat: 'steals' },
-                { regex: /(.+?)\s+(blocks?|blk)/i, stat: 'blocks' },
-                { regex: /(.+?)\s+(passing\s*yards?|pass\s*yds?)/i, stat: 'passing yards' },
-                { regex: /(.+?)\s+(rushing\s*yards?|rush\s*yds?)/i, stat: 'rushing yards' },
-                { regex: /(.+?)\s+(receiving\s*yards?|rec\s*yds?)/i, stat: 'receiving yards' },
-                { regex: /(.+?)\s+(receptions?|rec)$/i, stat: 'receptions' },
-            ];
-
-            for (const { regex, stat } of statPatterns) {
-                const match = nextLine.match(regex);
-                if (match) {
-                    const playerName = match[1].trim();
-                    bets.push(`${playerName} ${target}+ ${stat}`);
-                    i++; // Skip the next line since we consumed it
-                    break;
-                }
-            }
-            continue;
-        }
-
-        // Pattern 2: "Team -3.5" or "Team +7" spread
-        const spreadMatch = line.match(/^([\w\s]+?)\s*([+-]\d+\.?\d*)$/);
-        if (spreadMatch) {
-            const team = spreadMatch[1].trim();
-            const spread = spreadMatch[2];
-            // Skip if it looks like a score or odds
-            if (!team.match(/^\d/) && team.length > 2) {
-                bets.push(`${team} ${spread}`);
-                continue;
-            }
-        }
-
-        // Pattern 3: "Team ML" or moneyline
-        const mlMatch = line.match(/^([\w\s]+?)\s+(ml|moneyline)$/i);
-        if (mlMatch) {
-            bets.push(`${mlMatch[1].trim()} ML`);
-            continue;
-        }
+function saveApiKey() {
+    const input = document.getElementById('api-key-input');
+    const key = input.value.trim();
+    if (key) {
+        localStorage.setItem('anthropic_api_key', key);
+        showOCRStatus('API key saved', 'success');
+    } else {
+        localStorage.removeItem('anthropic_api_key');
+        showOCRStatus('API key removed', 'warning');
     }
-
-    return bets;
+    document.getElementById('api-key-container').classList.add('hidden');
 }
 
-// Clean up OCR text for manual editing
-function cleanOCRText(text) {
-    return text
-        .split('\n')
-        .map(l => l.trim())
-        .filter(l => l.length > 2)
-        .filter(l => !/^[\d\W]+$/.test(l)) // Remove lines that are just numbers/symbols
-        .join('\n');
-}
-
-// Show OCR status message
+// Show status message
 function showOCRStatus(message, type) {
     if (!ocrStatus) return;
 
@@ -684,3 +654,5 @@ window.updateManually = updateManually;
 window.clearAll = clearAll;
 window.refreshAllStats = refreshAllStats;
 window.refreshBet = refreshBet;
+window.toggleApiKey = toggleApiKey;
+window.saveApiKey = saveApiKey;

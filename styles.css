@@ -843,3 +843,78 @@ header h1 {
         padding: 10px 12px;
     }
 }
+
+/* API Key Section */
+.api-key-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.btn-settings {
+    background: none;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #666;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-settings:hover {
+    border-color: rgba(0, 212, 255, 0.4);
+    color: #00d4ff;
+}
+
+.api-key-container {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.api-key-container.hidden {
+    display: none;
+}
+
+.api-key-container input {
+    padding: 8px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+    font-size: 0.85rem;
+    width: 250px;
+}
+
+.api-key-container input:focus {
+    outline: none;
+    border-color: #00d4ff;
+}
+
+.btn-save-key {
+    padding: 8px 14px;
+    background: rgba(0, 212, 255, 0.2);
+    border: 1px solid rgba(0, 212, 255, 0.4);
+    border-radius: 8px;
+    color: #00d4ff;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-save-key:hover {
+    background: rgba(0, 212, 255, 0.3);
+}
+
+@media (max-width: 768px) {
+    .api-key-section {
+        flex-direction: column;
+    }
+
+    .api-key-container input {
+        width: 200px;
+    }
+}

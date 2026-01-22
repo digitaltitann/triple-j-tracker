@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Triple J Bet Tracker</title>
-    <link rel="stylesheet" href="styles.css?v=12">
+    <link rel="stylesheet" href="styles.css?v=13">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1a1a2e">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -43,6 +43,13 @@
                 </div>
             </div>
             <p class="input-hint">Player props: "lebron 25+ points" | Team bets: "Chiefs ML", "Lakers -5.5" | Or tap 📷 to upload a bet slip</p>
+            <div class="api-key-section">
+                <button class="btn-settings" onclick="toggleApiKey()">⚙️ API Key</button>
+                <div id="api-key-container" class="api-key-container hidden">
+                    <input type="password" id="api-key-input" placeholder="Enter Anthropic API key (sk-ant-...)" />
+                    <button class="btn-save-key" onclick="saveApiKey()">Save</button>
+                </div>
+            </div>
         </section>
 
         <!-- Live Stats Cards -->
@@ -65,10 +72,9 @@
         </section>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-    <script src="parser.js?v=12"></script>
-    <script src="api.js?v=12"></script>
-    <script src="script.js?v=12"></script>
+    <script src="parser.js?v=13"></script>
+    <script src="api.js?v=13"></script>
+    <script src="script.js?v=13"></script>
     <script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('./sw.js').then((registration) => {
