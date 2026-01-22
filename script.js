@@ -600,11 +600,16 @@ function extractDraftKingsBets(lines) {
         if (targetMatch && nextLine) {
             const target = targetMatch[1];
             // Check if next line has player name and stat
+            // Order matters: check combos first (more specific), then individual stats
             const statPatterns = [
+                { regex: /(.+?)\s+(points?\s*\+\s*rebounds?\s*\+\s*assists?|pts?\s*\+\s*reb\s*\+\s*ast|pra)/i, stat: 'points rebounds assists' },
+                { regex: /(.+?)\s+(points?\s*\+\s*rebounds?|pts?\s*\+\s*reb)/i, stat: 'points rebounds' },
+                { regex: /(.+?)\s+(points?\s*\+\s*assists?|pts?\s*\+\s*ast)/i, stat: 'points assists' },
+                { regex: /(.+?)\s+(rebounds?\s*\+\s*assists?|reb\s*\+\s*ast)/i, stat: 'rebounds assists' },
+                { regex: /(.+?)\s+(three\s*pointers?\s*made|threes|3pm)/i, stat: 'threes' },
                 { regex: /(.+?)\s+(rebounds?|reb)/i, stat: 'rebounds' },
                 { regex: /(.+?)\s+(points?|pts)/i, stat: 'points' },
                 { regex: /(.+?)\s+(assists?|ast)/i, stat: 'assists' },
-                { regex: /(.+?)\s+(three\s*pointers?\s*made|threes|3pm)/i, stat: 'threes' },
                 { regex: /(.+?)\s+(steals?|stl)/i, stat: 'steals' },
                 { regex: /(.+?)\s+(blocks?|blk)/i, stat: 'blocks' },
                 { regex: /(.+?)\s+(passing\s*yards?|pass\s*yds?)/i, stat: 'passing yards' },
