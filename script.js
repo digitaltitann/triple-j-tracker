@@ -515,115 +515,42 @@ function fileToBase64(file) {
     });
 }
 
-// Process image with Gemini Vision API (free tier)
+// Process image with AI Vision via backend
 async function processImageWithAI(file) {
-    const apiKey = localStorage.getItem('gemini_api_key');
-    if (!apiKey) {
-        showOCRStatus('Set your Gemini API key first (tap ⚙️ API Key)', 'error');
-        return;
-    }
-
     showOCRStatus('Analyzing bet slip...', 'loading');
 
     try {
         const base64Image = await fileToBase64(file);
         const mediaType = file.type || 'image/jpeg';
 
-        const prompt = `Extract all bets from this sportsbook screenshot. For each bet, output one line in this exact format:
-
-For player props: "PlayerName Target+ StatType"
-Examples: "LeBron James 25+ points", "Mahomes 300+ passing yards", "Josh Giddey 15+ points assists"
-
-For combo stats use these formats:
-- Points + Assists → "Name 15+ points assists"
-- Points + Rebounds → "Name 20+ points rebounds"
-- Points + Rebounds + Assists → "Name 30+ points rebounds assists"
-
-For spreads: "TeamName -3.5" or "TeamName +7"
-For moneyline: "TeamName ML"
-For game totals: "Over 220.5 Team1 Team2"
-
-Use the team's common name (Knicks, Lakers, Chiefs, etc), not abbreviations.
-Output ONLY the bet lines, one per line. No other text.`;
-
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
+        const response = await fetch('/api/scan', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                contents: [{
-                    parts: [
-                        {
-                            inlineData: {
-                                mimeType: mediaType,
-                                data: base64Image
-                            }
-                        },
-                        {
-                            text: prompt
-                        }
-                    ]
-                }]
-            })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ image: base64Image, mediaType })
         });
 
         if (!response.ok) {
             const error = await response.json();
-            console.error('Gemini API error:', error);
-            if (response.status === 400 && error.error?.message?.includes('API key')) {
-                showOCRStatus('Invalid API key - check your key in settings', 'error');
-            } else {
-                showOCRStatus(`API error: ${error.error?.message || 'Unknown error'}`, 'error');
-            }
+            console.error('Scan API error:', error);
+            showOCRStatus(error.error || 'Error scanning image', 'error');
             return;
         }
 
         const data = await response.json();
-        const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-        console.log('Gemini Vision Result:', text);
+        const bets = data.bets || [];
 
-        if (!text.trim()) {
+        if (bets.length === 0) {
             showOCRStatus('Could not extract bets from image', 'error');
             return;
         }
 
-        const lines = text.trim().split('\n').filter(l => l.trim().length > 0);
-        statsInput.value = lines.join('\n');
-        showOCRStatus(`Found ${lines.length} bet(s) - review and click Track`, 'success');
+        statsInput.value = bets.join('\n');
+        showOCRStatus(`Found ${bets.length} bet(s) - review and click Track`, 'success');
 
     } catch (error) {
         console.error('AI Vision Error:', error);
-        showOCRStatus('Error connecting to API', 'error');
+        showOCRStatus('Error connecting to server', 'error');
     }
-}
-
-// ==================== API Key Management ====================
-
-function toggleApiKey() {
-    const container = document.getElementById('api-key-container');
-    container.classList.toggle('hidden');
-    if (!container.classList.contains('hidden')) {
-        const input = document.getElementById('api-key-input');
-        const saved = localStorage.getItem('gemini_api_key');
-        if (saved) {
-            input.value = saved;
-        }
-        input.focus();
-    }
-}
-
-function saveApiKey() {
-    const input = document.getElementById('api-key-input');
-    const key = input.value.trim();
-    if (key) {
-        localStorage.setItem('gemini_api_key', key);
-        showOCRStatus('API key saved', 'success');
-    } else {
-        localStorage.removeItem('gemini_api_key');
-        showOCRStatus('API key removed', 'warning');
-    }
-    document.getElementById('api-key-container').classList.add('hidden');
 }
 
 // Show status message
@@ -647,5 +574,3 @@ window.updateManually = updateManually;
 window.clearAll = clearAll;
 window.refreshAllStats = refreshAllStats;
 window.refreshBet = refreshBet;
-window.toggleApiKey = toggleApiKey;
-window.saveApiKey = saveApiKey;
