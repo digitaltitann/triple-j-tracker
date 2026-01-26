@@ -515,11 +515,11 @@ function fileToBase64(file) {
     });
 }
 
-// Process image with Claude Vision API
+// Process image with Gemini Vision API (free tier)
 async function processImageWithAI(file) {
-    const apiKey = localStorage.getItem('anthropic_api_key');
+    const apiKey = localStorage.getItem('gemini_api_key');
     if (!apiKey) {
-        showOCRStatus('Set your Anthropic API key first (tap ⚙️ API Key)', 'error');
+        showOCRStatus('Set your Gemini API key first (tap ⚙️ API Key)', 'error');
         return;
     }
 
@@ -529,31 +529,7 @@ async function processImageWithAI(file) {
         const base64Image = await fileToBase64(file);
         const mediaType = file.type || 'image/jpeg';
 
-        const response = await fetch('https://api.anthropic.com/v1/messages', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'x-api-key': apiKey,
-                'anthropic-version': '2023-06-01',
-                'anthropic-dangerous-direct-browser-access': 'true'
-            },
-            body: JSON.stringify({
-                model: 'claude-sonnet-4-20250514',
-                max_tokens: 1024,
-                messages: [{
-                    role: 'user',
-                    content: [
-                        {
-                            type: 'image',
-                            source: {
-                                type: 'base64',
-                                media_type: mediaType,
-                                data: base64Image
-                            }
-                        },
-                        {
-                            type: 'text',
-                            text: `Extract all bets from this sportsbook screenshot. For each bet, output one line in this exact format:
+        const prompt = `Extract all bets from this sportsbook screenshot. For each bet, output one line in this exact format:
 
 For player props: "PlayerName Target+ StatType"
 Examples: "LeBron James 25+ points", "Mahomes 300+ passing yards", "Josh Giddey 15+ points assists"
@@ -568,7 +544,24 @@ For moneyline: "TeamName ML"
 For game totals: "Over 220.5 Team1 Team2"
 
 Use the team's common name (Knicks, Lakers, Chiefs, etc), not abbreviations.
-Output ONLY the bet lines, one per line. No other text.`
+Output ONLY the bet lines, one per line. No other text.`;
+
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                contents: [{
+                    parts: [
+                        {
+                            inlineData: {
+                                mimeType: mediaType,
+                                data: base64Image
+                            }
+                        },
+                        {
+                            text: prompt
                         }
                     ]
                 }]
@@ -577,8 +570,8 @@ Output ONLY the bet lines, one per line. No other text.`
 
         if (!response.ok) {
             const error = await response.json();
-            console.error('Claude API error:', error);
-            if (response.status === 401) {
+            console.error('Gemini API error:', error);
+            if (response.status === 400 && error.error?.message?.includes('API key')) {
                 showOCRStatus('Invalid API key - check your key in settings', 'error');
             } else {
                 showOCRStatus(`API error: ${error.error?.message || 'Unknown error'}`, 'error');
@@ -587,8 +580,8 @@ Output ONLY the bet lines, one per line. No other text.`
         }
 
         const data = await response.json();
-        const text = data.content?.[0]?.text || '';
-        console.log('Claude Vision Result:', text);
+        const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        console.log('Gemini Vision Result:', text);
 
         if (!text.trim()) {
             showOCRStatus('Could not extract bets from image', 'error');
@@ -612,7 +605,7 @@ function toggleApiKey() {
     container.classList.toggle('hidden');
     if (!container.classList.contains('hidden')) {
         const input = document.getElementById('api-key-input');
-        const saved = localStorage.getItem('anthropic_api_key');
+        const saved = localStorage.getItem('gemini_api_key');
         if (saved) {
             input.value = saved;
         }
@@ -624,10 +617,10 @@ function saveApiKey() {
     const input = document.getElementById('api-key-input');
     const key = input.value.trim();
     if (key) {
-        localStorage.setItem('anthropic_api_key', key);
+        localStorage.setItem('gemini_api_key', key);
         showOCRStatus('API key saved', 'success');
     } else {
-        localStorage.removeItem('anthropic_api_key');
+        localStorage.removeItem('gemini_api_key');
         showOCRStatus('API key removed', 'warning');
     }
     document.getElementById('api-key-container').classList.add('hidden');

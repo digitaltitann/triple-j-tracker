@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Triple J Bet Tracker</title>
-    <link rel="stylesheet" href="styles.css?v=13">
+    <link rel="stylesheet" href="styles.css?v=14">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1a1a2e">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -46,7 +46,7 @@
             <div class="api-key-section">
                 <button class="btn-settings" onclick="toggleApiKey()">⚙️ API Key</button>
                 <div id="api-key-container" class="api-key-container hidden">
-                    <input type="password" id="api-key-input" placeholder="Enter Anthropic API key (sk-ant-...)" />
+                    <input type="password" id="api-key-input" placeholder="Enter Gemini API key" />
                     <button class="btn-save-key" onclick="saveApiKey()">Save</button>
                 </div>
             </div>
@@ -72,9 +72,9 @@
         </section>
     </div>
 
-    <script src="parser.js?v=13"></script>
-    <script src="api.js?v=13"></script>
-    <script src="script.js?v=13"></script>
+    <script src="parser.js?v=14"></script>
+    <script src="api.js?v=14"></script>
+    <script src="script.js?v=14"></script>
     <script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('./sw.js').then((registration) => {
