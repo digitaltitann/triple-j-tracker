@@ -176,6 +176,173 @@ header h1 {
     to { transform: rotate(360deg); }
 }
 
+/* View Toggle Button */
+.btn-view-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #aaa;
+}
+
+.btn-view-toggle:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+}
+
+/* List View */
+.stats-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.list-item {
+    display: grid;
+    grid-template-columns: 1fr auto auto auto auto;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.list-item.hitting {
+    border-color: rgba(255, 100, 0, 0.5);
+    background: rgba(255, 100, 0, 0.08);
+}
+
+.list-item.close {
+    border-color: rgba(255, 193, 7, 0.3);
+}
+
+.list-item.not-hitting {
+    border-color: rgba(255, 71, 87, 0.3);
+}
+
+.list-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.list-line {
+    font-size: 0.8rem;
+    color: #888;
+    white-space: nowrap;
+}
+
+.list-current {
+    font-size: 1.3rem;
+    font-weight: 800;
+    min-width: 36px;
+    text-align: center;
+}
+
+.list-current.hitting { color: #00ff88; }
+.list-current.close { color: #ffc107; }
+.list-current.not-hitting { color: #ff4757; }
+.list-current.pending { color: #666; }
+
+.list-status {
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 4px 8px;
+    border-radius: 12px;
+    white-space: nowrap;
+    min-width: 50px;
+    text-align: center;
+}
+
+.list-status.hitting {
+    background: rgba(0, 255, 136, 0.2);
+    color: #00ff88;
+}
+
+.list-status.close {
+    background: rgba(255, 193, 7, 0.2);
+    color: #ffc107;
+}
+
+.list-status.not-hitting {
+    background: rgba(255, 71, 87, 0.2);
+    color: #ff4757;
+}
+
+.list-status.pending {
+    background: rgba(255, 255, 255, 0.1);
+    color: #888;
+}
+
+.list-remove {
+    background: none;
+    border: none;
+    color: #555;
+    cursor: pointer;
+    font-size: 1.1rem;
+    padding: 2px 6px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.list-remove:hover {
+    background: rgba(255, 71, 87, 0.3);
+    color: #ff4757;
+}
+
+@media (max-width: 768px) {
+    .list-item {
+        grid-template-columns: 1fr auto auto auto auto;
+        gap: 8px;
+        padding: 10px 12px;
+    }
+
+    .list-name {
+        font-size: 0.8rem;
+    }
+
+    .list-line {
+        font-size: 0.7rem;
+    }
+
+    .list-current {
+        font-size: 1.1rem;
+        min-width: 28px;
+    }
+
+    .list-status {
+        font-size: 0.6rem;
+        padding: 3px 6px;
+        min-width: 40px;
+    }
+}
+
+@media (max-width: 400px) {
+    .list-item {
+        gap: 6px;
+        padding: 8px 10px;
+    }
+
+    .list-name {
+        font-size: 0.75rem;
+    }
+
+    .list-current {
+        font-size: 1rem;
+    }
+}
+
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));

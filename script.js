@@ -149,8 +149,25 @@ async function refreshAllStats() {
     refreshBtn?.classList.remove('loading');
 }
 
+// View mode: 'cards' or 'list'
+let viewMode = localStorage.getItem('viewMode') || 'cards';
+
+function toggleView() {
+    viewMode = viewMode === 'cards' ? 'list' : 'cards';
+    localStorage.setItem('viewMode', viewMode);
+    updateViewIcon();
+    renderCards();
+}
+
+function updateViewIcon() {
+    const icon = document.getElementById('view-icon');
+    if (icon) icon.textContent = viewMode === 'cards' ? '☰' : '▦';
+}
+
 // Render all cards
 function renderCards() {
+    updateViewIcon();
+
     if (trackedPlayers.length === 0) {
         statsContainer.innerHTML = `
             <div class="empty-state">
@@ -161,7 +178,13 @@ function renderCards() {
         return;
     }
 
-    statsContainer.innerHTML = trackedPlayers.map(bet => renderCard(bet)).join('');
+    if (viewMode === 'list') {
+        statsContainer.className = 'stats-list';
+        statsContainer.innerHTML = trackedPlayers.map(bet => renderListItem(bet)).join('');
+    } else {
+        statsContainer.className = 'stats-grid';
+        statsContainer.innerHTML = trackedPlayers.map(bet => renderCard(bet)).join('');
+    }
 }
 
 // Route to correct card renderer
@@ -175,6 +198,78 @@ function renderCard(bet) {
     }
     // Default to player prop (including legacy data)
     return renderPlayerPropCard(bet);
+}
+
+// Render a compact list item for any bet type
+function renderListItem(bet) {
+    let name, line, current, status, statusClass;
+
+    if (bet.betType === 'team_moneyline') {
+        name = bet.teamName;
+        line = 'ML';
+        current = bet.teamScore ?? '-';
+        if (bet.notStarted) { statusClass = 'pending'; status = bet.gameStatus || 'NOT STARTED'; }
+        else if (bet.noGame || bet.found === false) { statusClass = 'pending'; status = 'NO GAME'; }
+        else if (bet.winning) { statusClass = 'hitting'; status = 'WIN'; }
+        else if (bet.tied) { statusClass = 'close'; status = 'TIED'; }
+        else { statusClass = 'not-hitting'; status = 'LOSING'; }
+    } else if (bet.betType === 'team_spread') {
+        const spreadDisplay = bet.spread > 0 ? `+${bet.spread}` : `${bet.spread}`;
+        name = bet.teamName;
+        line = spreadDisplay;
+        current = bet.teamScore ?? '-';
+        if (bet.notStarted) { statusClass = 'pending'; status = bet.gameStatus || 'NOT STARTED'; }
+        else if (bet.noGame || bet.found === false) { statusClass = 'pending'; status = 'NO GAME'; }
+        else if (bet.covering) { statusClass = 'hitting'; status = `COVER ${bet.margin > 0 ? '+' : ''}${bet.margin}`; }
+        else { statusClass = 'not-hitting'; status = `MISS ${bet.margin > 0 ? '+' : ''}${bet.margin}`; }
+    } else if (bet.betType === 'team_total') {
+        const dirSymbol = bet.direction === 'over' ? 'O' : 'U';
+        name = `${bet.team1Name} vs ${bet.team2Name}`;
+        line = `${dirSymbol} ${bet.target}`;
+        current = bet.currentTotal || 0;
+        if (bet.notStarted) { statusClass = 'pending'; status = bet.gameStatus || 'NOT STARTED'; }
+        else if (bet.noGame || bet.found === false) { statusClass = 'pending'; status = 'NO GAME'; }
+        else if (bet.hitting) { statusClass = 'hitting'; status = 'ON PACE'; }
+        else { statusClass = 'not-hitting'; status = 'OFF PACE'; }
+    } else {
+        // Player prop
+        name = bet.playerName;
+        const directionSymbol = bet.direction === 'over' ? '+' : '-';
+        line = `${bet.target}${directionSymbol} ${bet.displayStat}`;
+        current = bet.current || 0;
+        const target = bet.target || 0;
+        const isOver = bet.direction === 'over';
+
+        if (bet.noGame || bet.found === false) {
+            statusClass = 'pending'; status = 'NO GAME';
+        } else if (bet.notStarted) {
+            statusClass = 'pending'; status = bet.gameStatus || 'NOT STARTED';
+        } else if (isOver) {
+            if (current >= target) { statusClass = 'hitting'; status = 'HIT'; }
+            else if (current >= target * 0.7) { statusClass = 'close'; status = 'CLOSE'; }
+            else { statusClass = 'not-hitting'; status = 'NEEDS'; }
+        } else {
+            if (current < target * 0.8) { statusClass = 'hitting'; status = 'PACE'; }
+            else if (current < target) { statusClass = 'close'; status = 'CLOSE'; }
+            else { statusClass = 'not-hitting'; status = 'OVER'; }
+        }
+    }
+
+    if (bet.isLive && statusClass !== 'pending') {
+        status = '● ' + status;
+    }
+
+    const sportBadge = `<span class="sport-badge ${bet.sport || 'nba'}">${(bet.sport || 'nba').toUpperCase()}</span>`;
+
+    return `
+        <div class="list-item ${statusClass}">
+            <div class="list-name">${name} ${sportBadge}</div>
+            <div class="list-line">${line}</div>
+            <div class="list-current ${statusClass}">${current}</div>
+            <div class="list-status ${statusClass}">${status}</div>
+            <button class="list-remove" onclick="removePlayer('${bet.id}')">&times;</button>
+        </div>
+    `;
 }
 
 // Render a player prop card
@@ -574,3 +669,4 @@ window.updateManually = updateManually;
 window.clearAll = clearAll;
 window.refreshAllStats = refreshAllStats;
 window.refreshBet = refreshBet;
+window.toggleView = toggleView;

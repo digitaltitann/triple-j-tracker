@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Triple J Bet Tracker</title>
-    <link rel="stylesheet" href="styles.css?v=15">
+    <link rel="stylesheet" href="styles.css?v=16">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1a1a2e">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -50,6 +50,9 @@
             <div class="section-header">
                 <h2>Live Tracking</h2>
                 <div class="header-actions">
+                    <button class="btn-view-toggle" onclick="toggleView()" title="Toggle view">
+                        <span id="view-icon">☰</span>
+                    </button>
                     <button class="btn-refresh" onclick="refreshAllStats()">
                         <span class="refresh-icon">↻</span> Refresh
                     </button>
@@ -65,9 +68,9 @@
         </section>
     </div>
 
-    <script src="parser.js?v=15"></script>
-    <script src="api.js?v=15"></script>
-    <script src="script.js?v=15"></script>
+    <script src="parser.js?v=16"></script>
+    <script src="api.js?v=16"></script>
+    <script src="script.js?v=16"></script>
     <script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('./sw.js').then((registration) => {
