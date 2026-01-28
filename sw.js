@@ -1,4 +1,4 @@
-const CACHE_NAME = 'triple-j-v16';
+const CACHE_NAME = 'triple-j-v17';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -10,13 +10,14 @@ const STATIC_ASSETS = [
   './manifest.json'
 ];
 
-// Install: cache static assets
+// Install: cache static assets and activate immediately
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll(STATIC_ASSETS);
     })
   );
+  self.skipWaiting();
 });
 
 // Listen for skip waiting message from client
